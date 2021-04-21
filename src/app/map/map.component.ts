@@ -3,8 +3,10 @@
 import { Component, OnInit, ViewChild, ElementRef, NgZone } from '@angular/core';
 import { Geolocation } from '@ionic-native/geolocation/ngx';
 import { NativeGeocoder, NativeGeocoderResult, NativeGeocoderOptions } from '@ionic-native/native-geocoder/ngx';
+import { HttpClient } from '@angular/common/http';
 
 declare var google;
+
 
 @Component({
   selector: 'app-map',
@@ -23,12 +25,16 @@ export class MapComponent implements OnInit {
   location: any;
   placeid: any;
   GoogleAutocomplete: any;
+  //                           MURCIA                                 SAN JAVIER                              SAN CAYETANO                            CARTAGENA
+  //                    LAT               LONG
+  direcciones: any[]
 
  
   constructor(
     private geolocation: Geolocation,
     private nativeGeocoder: NativeGeocoder,    
     public zone: NgZone,
+    private http: HttpClient
   ) {
     this.GoogleAutocomplete = new google.maps.places.AutocompleteService();
     this.autocomplete = { input: '' };
@@ -94,53 +100,115 @@ export class MapComponent implements OnInit {
 
   //FUNCION DEL BOTON INFERIOR PARA QUE NOS DIGA LAS COORDENADAS DEL LUGAR EN EL QUE POSICIONAMOS EL PIN.
   ShowCords(){
-    alert('lat' +this.lat+', long'+this.long )
+    // alert('lat' +this.lat+', long'+this.long )
+    alert('Ubicaciones posibles: \r\n\r\n'
+          + ' - Murcia capital\r\n - San Javier\r\n - San Cayetano\r\n - Cartagena')
   }
   
-  //AUTOCOMPLETE, SIMPLEMENTE ACTUALIZAMOS LA LISTA CON CADA EVENTO DE ION CHANGE EN LA VISTA.
-  /*UpdateSearchResults(){
-    if (this.autocomplete.input == '') {
-      this.autocompleteItems = [];
-      return;
-    }
-    this.GoogleAutocomplete.getPlacePredictions({ input: this.autocomplete.input },
-    (predictions, status) => {
-      this.autocompleteItems = [];
-      this.zone.run(() => {
-        predictions.forEach((prediction) => {
-          this.autocompleteItems.push(prediction);
-        });
-      });
-    });
-  }*/
-  
-  //FUNCION QUE LLAMAMOS DESDE EL ITEM DE LA LISTA.
-  /*SelectSearchResult(item) {
-    //AQUI PONDREMOS LO QUE QUERAMOS QUE PASE CON EL PLACE ESCOGIDO, GUARDARLO, SUBIRLO A FIRESTORE.
-    //HE AÑADIDO UN ALERT PARA VER EL CONTENIDO QUE NOS OFRECE GOOGLE Y GUARDAMOS EL PLACEID PARA UTILIZARLO POSTERIORMENTE SI QUEREMOS.
-    alert(JSON.stringify(item))      
-    this.placeid = item.place_id
-  }*/
-  
-  
-  //LLAMAMOS A ESTA FUNCION PARA LIMPIAR LA LISTA CUANDO PULSAMOS IONCLEAR.
-  /*ClearAutocomplete(){
-    this.autocompleteItems = []
-    this.autocomplete.input = ''
-  }*/
-
 
   
 
 
-  mostrarCalle(){
+   mostrarCalle(){
     const url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng='+this.lat+','+this.long+'&key=AIzaSyB6QgBvFSz8Zy_-4YvsGsOpA3IhnVJMZEA'
-    fetch(url)
+    console.log(url)
+      
+     fetch(url)
     .then((response) => response.json())
     .then((responseJson) => {
       console.log(responseJson)
-      alert(responseJson.results[1].formatted_address)
+      let actual = responseJson.results[1].formatted_address
+      alert(actual)
     })
+
+
+  }
+
+   calculateDistance(){
+    const url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng='+this.lat+','+this.long+'&key=AIzaSyB6QgBvFSz8Zy_-4YvsGsOpA3IhnVJMZEA'
+
+    let distancia = (<HTMLSelectElement>document.getElementById('distancia')).value;
+    var dis: number = +distancia;
+    console.log(distancia)
+    var a = 0, b = 0, c = 0, d = 0
+    this.direcciones= ['37.9832905759174 -1.097789813025254', '37.80548978252476 -0.8332412248237175' , '37.81669280866347 -0.8938290129202064' , '37.61514791335604 -0.9872168328689512']
+    const direccion1 = this.direcciones[0].split(' ')
+    const direccion2 = this.direcciones[1].split(' ')
+    const direccion3 = this.direcciones[2].split(' ')
+    const direccion4 = this.direcciones[3].split(' ')
+    
+
+    const matrix = new google.maps.DistanceMatrixService();
+    
+    matrix.getDistanceMatrix({
+      origins: [new google.maps.LatLng(this.lat, this.long)],
+      destinations: [new google.maps.LatLng(direccion1[0], direccion1[1]),
+                     new google.maps.LatLng(direccion2[0], direccion2[1]),
+                     new google.maps.LatLng(direccion3[0], direccion3[1]),
+                     new google.maps.LatLng(direccion4[0], direccion4[1])],
+      travelMode: google.maps.TravelMode.DRIVING,
+
+    }, function(response, status) {
+    // ------------------------------------------- mostrar calle -----------------------------------------------------
+      console.log(response)
+
+    console.log(url)
+      
+     fetch(url)
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log(responseJson)
+      let actual = responseJson.results[1].formatted_address
+      console.log(actual)
+      console.log(distancia)
+
+      
+      a = response.rows[0].elements[0].distance.value / 1000
+      // a.split('.').join(',');
+      var direccionA = response.destinationAddresses[0]
+      console.log(a)
+
+      b = response.rows[0].elements[1].distance.value / 1000
+      var direccionB = response.destinationAddresses[1]
+      console.log(b)
+
+      c = response.rows[0].elements[2].distance.value / 1000
+      var direccionC = response.destinationAddresses[2]
+      console.log(c)
+
+      d = response.rows[0].elements[3].distance.value / 1000
+      var direccionD = response.destinationAddresses[3]
+      console.log(d)
+
+      if (dis === undefined) {
+        alert('Seleccione antes una distancia...')
+      }else{
+        var alerta = 'Más cerca de ' + dis + ' kilómetros\r\n \r\n';
+      if (b < dis) {
+        alerta +=  direccionB + ' - ' + b + ' km \r\n\r\n'
+      }
+      if (a < dis) {
+        alerta +=  direccionA + ' - ' + a + ' km \r\n\r\n'
+      }
+      if (c < dis) {
+        alerta +=  direccionC + ' - ' + c + ' km \r\n\r\n'
+      }
+      if (d < dis) {
+        alerta +=  direccionD + ' - ' + d + ' km \r\n\r\n'
+      }
+      if (alerta == 'Más cerca de ' + dis + ' kilómetros\r\n \r\n') {
+        alerta = "No hay ninguna ubicación a menos de " + dis + " km..."
+      }
+      alert(alerta)
+      }
+      
+      console.log(status)
+    })
+
+
+    // ------------------------------------------- mostrar calle -----------------------------------------------------
+      
+    });
 
 
   }

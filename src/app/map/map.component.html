@@ -17,6 +17,32 @@
           ¿Dónde estoy?
         </ion-button>
     </ion-col>
+
+    <ion-col size="4">
+      <ion-fab horizontal="left">
+        <ion-fab-button ion-fab color="danger" (click)="calculateDistance()">
+          <ion-icon name="car-sport"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
+    </ion-col>
+
+    <ion-col size="8">
+      <ion-item>
+        <ion-label>Distancia</ion-label>
+        <ion-select placeholder="Select One" id="distancia"> <!--onIonChange={e => setGender(e.detail.value)}>-->
+          <ion-select-option value="3">3 kilómetros</ion-select-option>
+          <ion-select-option value="5">5 kilómetros</ion-select-option>
+          <ion-select-option value="10">10 kilómetros</ion-select-option>
+          <ion-select-option value="20">20 kilómetros</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-col>
+
+      
+      
+    
+
+    
   </ion-row>  
 </ion-header>
 <ion-content> 

@@ -1,7 +1,9 @@
 {
   "name": "mapa",
   "integrations": {
-    "cordova": {}
+    "cordova": {},
+    "capacitor": {}
   },
   "type": "angular"
+  
 }
