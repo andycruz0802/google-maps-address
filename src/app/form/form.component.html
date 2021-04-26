@@ -1,0 +1,67 @@
+<ion-header>
+  <ion-title class="ion-text-center">Formulario</ion-title>
+  <ion-toolbar color="danger" class="buscador">
+    <ion-searchbar [(ngModel)]="autocomplete.input" (ionInput)="UpdateSearchResults()" placeholder="Dinos el nombre de tu calle! :)"  (ionClear)="ClearAutocomplete()"></ion-searchbar>
+  </ion-toolbar>
+  
+  <ion-list [hidden]="autocompleteItems.length == 0">
+    <ion-item *ngFor="let item of autocompleteItems"  (click)="SelectSearchResult(item)">
+      {{ item.description }}
+    </ion-item>
+  </ion-list>
+</ion-header>
+
+<ion-content>
+
+  <form [formGroup]="todo" (ngSubmit)="enviaInfo()">
+      <ion-row>
+        <ion-col size="12">
+          <ion-item>
+            <ion-label  color="primary" position="floating" box>Dirección</ion-label>
+            <ion-input type="text" formControlName="direccion" id="address" [(ngModel)]="todo.value.direccion" clearInput></ion-input>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+
+        <ion-row>
+          <ion-col size="6">
+            <ion-item>
+              <ion-label color="primary" position="floating">Número</ion-label>
+              <ion-input type="number" formControlName="numero"></ion-input>
+            </ion-item>
+          </ion-col>
+        <!-- </ion-row>
+
+        <ion-row> -->
+          <ion-col size="6">
+            <ion-item>
+              <ion-label color="primary" position="floating">Piso</ion-label>
+              <ion-input type="number" formControlName="piso"></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <ion-row>
+          <ion-col size="12">
+            <ion-item>
+              <ion-label color="primary" position="floating">Description</ion-label>
+              <ion-textarea  formControlName="descripcion"></ion-textarea >
+            </ion-item>
+          </ion-col>
+        </ion-row>
+          
+        <div class="botones">
+          <ion-button (click)="goToMap()" class="ml-4" style="margin-left: 20px;">
+            <ion-icon slot="icon-only" name="map"></ion-icon>
+          </ion-button>
+  
+          <ion-button type="submit" [disabled]="!todo.valid"  color="success" style="float:right; margin-right: 20px;">
+            Enviar
+          </ion-button>
+        </div>
+        
+      
+      <!-- <button ion-button type="submit" [disabled]="!todo.valid">Submit</button> -->
+    </form>
+
+</ion-content>

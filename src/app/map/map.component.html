@@ -1,4 +1,5 @@
 <ion-header>
+
   <!-- <ion-toolbar color="primary">
     <ion-searchbar [(ngModel)]="autocomplete.input" (ionInput)="UpdateSearchResults()" placeholder="Search for a place"  (ionClear)="ClearAutocomplete()"></ion-searchbar>
   </ion-toolbar>
@@ -7,7 +8,17 @@
       {{ item.description }}
     </ion-item>
   </ion-list> -->
-  <ion-row>    
+  <ion-row>
+    <!-- <ion-toolbar color="primary">
+      <ion-searchbar [(ngModel)]="autocomplete.input" (ionInput)="UpdateSearchResults()" placeholder="Search for a place"  (ionClear)="ClearAutocomplete()"></ion-searchbar>
+    </ion-toolbar>
+    
+    <ion-list [hidden]="autocompleteItems.length == 0">
+      <ion-item *ngFor="let item of autocompleteItems"  (click)="SelectSearchResult(item)">
+        {{ item.description }}
+      </ion-item>
+    </ion-list> -->
+
     <ion-col size="6">
       <h1 style="color: #3880ff; font-weight: 500;">Mapa</h1>
     </ion-col>
@@ -29,7 +40,7 @@
     <ion-col size="8">
       <ion-item>
         <ion-label>Distancia</ion-label>
-        <ion-select placeholder="Select One" id="distancia"> <!--onIonChange={e => setGender(e.detail.value)}>-->
+        <ion-select placeholder="Select One" id="distancia">
           <ion-select-option value="3">3 kilómetros</ion-select-option>
           <ion-select-option value="5">5 kilómetros</ion-select-option>
           <ion-select-option value="10">10 kilómetros</ion-select-option>
@@ -46,15 +57,26 @@
   </ion-row>  
 </ion-header>
 <ion-content> 
-  <ion-fab vertical="bottom" horizontal="start" slot="fixed">
+  <!-- <ion-fab vertical="bottom" horizontal="start" slot="fixed">
     <ion-fab-button (click)="ShowCords()" ion-fab color="tertiary">
       <ion-icon name="information-circle-outline"></ion-icon>
     </ion-fab-button>
+  </ion-fab> --> 
+
+  <ion-fab vertical="bottom" horizontal="start" slot="fixed">
+    <ion-fab-button (click)="goToForm()">
+      <ion-icon name="arrow-back-circle"></ion-icon>  
+    </ion-fab-button>
   </ion-fab>
+
   <div class="map-wrapper" style="height: 100%;">      
     <div id="map_center" >
       <ion-icon name="location" size="large" color="danger"></ion-icon>      
     </div>
     <div #map id="map" (click)="mostrarCalle()"  style="height: 100%;"></div>
   </div>
+
+ <!-- <form-component></form-component> -->
+
 </ion-content>
+<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB6QgBvFSz8Zy_-4YvsGsOpA3IhnVJMZEA&callback=initAutocomplete&libraries=places&v=weekly" ></script>

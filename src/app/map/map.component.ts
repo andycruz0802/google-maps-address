@@ -3,9 +3,13 @@
 import { Component, OnInit, ViewChild, ElementRef, NgZone } from '@angular/core';
 import { Geolocation } from '@ionic-native/geolocation/ngx';
 import { NativeGeocoder, NativeGeocoderResult, NativeGeocoderOptions } from '@ionic-native/native-geocoder/ngx';
-import { HttpClient } from '@angular/common/http';
+import { BrowserModule } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 
-declare var google;
+// import { HttpClient } from '@angular/common/http';
+// import { LatLng } from '@ionic-native/google-maps';
+
+declare var google: any;
 
 
 @Component({
@@ -13,6 +17,9 @@ declare var google;
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
 })
+
+  
+
 export class MapComponent implements OnInit {
   
   @ViewChild('map',  {static: false}) mapElement: ElementRef;
@@ -25,8 +32,6 @@ export class MapComponent implements OnInit {
   location: any;
   placeid: any;
   GoogleAutocomplete: any;
-  //                           MURCIA                                 SAN JAVIER                              SAN CAYETANO                            CARTAGENA
-  //                    LAT               LONG
   direcciones: any[]
 
  
@@ -34,8 +39,10 @@ export class MapComponent implements OnInit {
     private geolocation: Geolocation,
     private nativeGeocoder: NativeGeocoder,    
     public zone: NgZone,
-    private http: HttpClient
-  ) {
+    private route: Router
+
+  ){
+    
     this.GoogleAutocomplete = new google.maps.places.AutocompleteService();
     this.autocomplete = { input: '' };
     this.autocompleteItems = [];
@@ -51,26 +58,47 @@ export class MapComponent implements OnInit {
     
     //OBTENEMOS LAS COORDENADAS DESDE EL TELEFONO.
     this.geolocation.getCurrentPosition().then((resp) => {
-      let latLng = new google.maps.LatLng(resp.coords.latitude, resp.coords.longitude);
+      const latLng = new google.maps.LatLng(resp.coords.latitude, resp.coords.longitude);
       let mapOptions = {
         center: latLng,
         zoom: 15,
-        mapTypeId: google.maps.MapTypeId.ROADMAP
-      } 
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        fullscreenControl: false
+      }
+      this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions); 
+      this.lat = this.map.center.lat() 
+      this.long = this.map.center.lng()
+
+    const url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng='+this.lat+','+this.long+'&key=AIzaSyB6QgBvFSz8Zy_-4YvsGsOpA3IhnVJMZEA'
+    console.log(url)
       
+     fetch(url)
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log(responseJson)
+      this.autocomplete.input = responseJson.results[1].formatted_address
+    })
+
+
+    
       //CUANDO TENEMOS LAS COORDENADAS SIMPLEMENTE NECESITAMOS PASAR AL MAPA DE GOOGLE TODOS LOS PARAMETROS.
       this.getAddressFromCoords(resp.coords.latitude, resp.coords.longitude); 
       this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions); 
-      this.map.addListener('tilesloaded', () => {
-        console.log('accuracy',this.map, this.map.center.lat());
-        this.getAddressFromCoords(this.map.center.lat(), this.map.center.lng())
+      this.map.addListener('center_changed', () => {
         this.lat = this.map.center.lat()
         this.long = this.map.center.lng()
+        console.log('accuracy',this.map, this.map.center.lat());
+        this.getAddressFromCoords(this.map.center.lat(), this.map.center.lng())
+        
       }); 
     }).catch((error) => {
       console.log('Error getting location', error);
     });
+  
   }
+
+  
+
 
   
   getAddressFromCoords(lattitude, longitude) {
@@ -85,7 +113,7 @@ export class MapComponent implements OnInit {
         let responseAddress = [];
         for (let [key, value] of Object.entries(result[0])) {
           if(value.length>0)
-          responseAddress.push(value); 
+          responseAddress.push(value);  
         }
         responseAddress.reverse();
         for (let value of responseAddress) {
@@ -98,16 +126,57 @@ export class MapComponent implements OnInit {
       }); 
   }
 
+  
+    
+
   //FUNCION DEL BOTON INFERIOR PARA QUE NOS DIGA LAS COORDENADAS DEL LUGAR EN EL QUE POSICIONAMOS EL PIN.
   ShowCords(){
     // alert('lat' +this.lat+', long'+this.long )
     alert('Ubicaciones posibles: \r\n\r\n'
           + ' - Murcia capital\r\n - San Javier\r\n - San Cayetano\r\n - Cartagena')
   }
-  
 
-  
+  goToForm(){
+    this.route.navigate([''])
+  }
 
+  //AUTOCOMPLETE, SIMPLEMENTE ACTUALIZAMOS LA LISTA CON CADA EVENTO DE ION CHANGE EN LA VISTA.
+  // UpdateSearchResults(){
+  //   if (this.autocomplete.input == '') {
+  //     this.autocompleteItems = [];
+  //     return;
+  //   }
+  //   this.GoogleAutocomplete.getPlacePredictions({ input: this.autocomplete.input },
+  //   (predictions, status) => {
+       
+  //     this.autocompleteItems = [];
+  //     this.zone.run(() => {
+  //       predictions.forEach((prediction) => {
+  //         console.log(prediction)
+  //         this.autocompleteItems.push(prediction);
+  //       });
+  //     });
+  //   });
+  // }
+  
+  // //FUNCION QUE LLAMAMOS DESDE EL ITEM DE LA LISTA.
+  // SelectSearchResult(item) {
+  //   //AQUI PONDREMOS LO QUE QUERAMOS QUE PASE CON EL PLACE ESCOGIDO, GUARDARLO, SUBIRLO A FIRESTORE.
+  //   //HE AÑADIDO UN ALERT PARA VER EL CONTENIDO QUE NOS OFRECE GOOGLE Y GUARDAMOS EL PLACEID PARA UTILIZARLO POSTERIORMENTE SI QUEREMOS.
+  //   console.log(JSON.stringify(item))
+  //   this.autocomplete.input = item.description;
+  //   this.autocompleteItems = [];      
+  //   this.placeid = item.place_id
+  //   this.GoTo()
+  // }
+  
+  
+  // //LLAMAMOS A ESTA FUNCION PARA LIMPIAR LA LISTA CUANDO PULSAMOS IONCLEAR.
+  // ClearAutocomplete(){
+  //   this.autocompleteItems = []
+  //   this.autocomplete.input = ''
+  // }
+  
 
    mostrarCalle(){
     const url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng='+this.lat+','+this.long+'&key=AIzaSyB6QgBvFSz8Zy_-4YvsGsOpA3IhnVJMZEA'
@@ -163,38 +232,47 @@ export class MapComponent implements OnInit {
       console.log(distancia)
 
       
+
       a = response.rows[0].elements[0].distance.value / 1000
       // a.split('.').join(',');
-      var direccionA = response.destinationAddresses[0]
+      var a_string = ''+a;
+      a_string = a_string.replace('.', ',')
+      var direccionA = response.destinationAddresses[0]  
       console.log(a)
 
       b = response.rows[0].elements[1].distance.value / 1000
+      var b_string = ''+b;
+      b_string = b_string.replace('.', ',')
       var direccionB = response.destinationAddresses[1]
       console.log(b)
 
       c = response.rows[0].elements[2].distance.value / 1000
+      var c_string = ''+c;
+      c_string = c_string.replace('.', ',')
       var direccionC = response.destinationAddresses[2]
       console.log(c)
 
       d = response.rows[0].elements[3].distance.value / 1000
+      var d_string = ''+d;
+      d_string = d_string.replace('.', ',')
       var direccionD = response.destinationAddresses[3]
       console.log(d)
 
-      if (dis === undefined) {
+      if (isNaN(dis)) {
         alert('Seleccione antes una distancia...')
       }else{
         var alerta = 'Más cerca de ' + dis + ' kilómetros\r\n \r\n';
       if (b < dis) {
-        alerta +=  direccionB + ' - ' + b + ' km \r\n\r\n'
+        alerta +=  direccionB + ' - ' + b_string + ' km \r\n\r\n'
       }
       if (a < dis) {
-        alerta +=  direccionA + ' - ' + a + ' km \r\n\r\n'
+        alerta +=  direccionA + ' - ' + a_string + ' km \r\n\r\n'
       }
       if (c < dis) {
-        alerta +=  direccionC + ' - ' + c + ' km \r\n\r\n'
+        alerta +=  direccionC + ' - ' + c_string + ' km \r\n\r\n'
       }
       if (d < dis) {
-        alerta +=  direccionD + ' - ' + d + ' km \r\n\r\n'
+        alerta +=  direccionD + ' - ' + d_string + ' km \r\n\r\n'
       }
       if (alerta == 'Más cerca de ' + dis + ' kilómetros\r\n \r\n') {
         alerta = "No hay ninguna ubicación a menos de " + dis + " km..."
@@ -212,6 +290,11 @@ export class MapComponent implements OnInit {
 
 
   }
+
+  
+
+
+
  
   //EJEMPLO PARA IR A UN LUGAR DESDE UN LINK EXTERNO, ABRIR GOOGLE MAPS PARA DIRECCIONES. 
   GoTo(){

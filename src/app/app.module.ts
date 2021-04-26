@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { CommonModule } from '@angular/common';
 import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
@@ -14,18 +15,32 @@ import { AppRoutingModule } from './app-routing.module';
 import { Geolocation } from '@ionic-native/geolocation/ngx';
 import { NativeGeocoder } from '@ionic-native/native-geocoder/ngx';
 import { GoogleMaps } from '@ionic-native/google-maps';
+import { MapComponent } from './map/map.component';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormComponent } from './form/form.component';
 
-import { HttpClientModule } from '@angular/common/http';
 
 
 
 @NgModule({
-  declarations: [AppComponent],
-  entryComponents: [],
-  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule],
+  declarations: [AppComponent, MapComponent, FormComponent],
+  entryComponents: [MapComponent],
+  imports: [
+    BrowserModule, 
+    IonicModule.forRoot(), 
+    AppRoutingModule, 
+    CommonModule,
+    FormsModule, 
+    ReactiveFormsModule,
+  ],
+  exports: [
+    BrowserModule,
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+  ],
   providers: [
     StatusBar,
-    HttpClientModule,
     SplashScreen,
     //AÑADIMOS GEOLOCATION Y GEOCODER
     Geolocation,
